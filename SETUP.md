@@ -8,8 +8,9 @@ The database foundation is defined in `supabase/schema.sql`.
 1. Create a Supabase project (choose a free plan if available; no paid upgrade is required for this setup).
 2. Open **SQL Editor** in the Supabase dashboard.
 3. Paste and run `supabase/schema.sql`.
-4. In Authentication settings, configure phone/email sign-in methods and test them before launch.
-5. Keep database backups and review Row Level Security policies before real customer data is collected.
+4. Then paste and run `supabase/migrations/002_security_hardening.sql`.
+5. In Authentication settings, configure phone/email sign-in methods and test them before launch.
+6. Keep database backups and review Row Level Security policies before real customer data is collected.
 
 ## Browser client setup
 1. Copy `supabase-client.example.js` to `supabase-client.js`.
