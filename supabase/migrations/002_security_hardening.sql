@@ -36,7 +36,7 @@ begin
   if v_customer is null then
     raise exception 'Authentication required';
   end if;
-  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) < 1 or jsonb_array_length(p_items) > 20 then
+  if p_items is null or jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items) < 1 or jsonb_array_length(p_items) > 20 then
     raise exception 'Cart must contain between 1 and 20 items';
   end if;
   if coalesce(trim(p_delivery_name),'') = '' or coalesce(trim(p_delivery_phone),'') = ''
