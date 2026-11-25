@@ -6,8 +6,10 @@ Bangladesh custom tailoring and garments marketplace — first responsive Bengal
 - Responsive Bengali storefront and clothing categories
 - Sample product cards and customization form UI
 - Manual body measurement form UI
-- Customer login form UI
-- Seller application form UI
+- Supabase email/password signup and login UI (requires project config)
+- Manual measurement form connected to Supabase
+- Seller application form connected to Supabase (pending admin approval)
+- Local product customization preference storage
 
 ## Database foundation
 - Supabase PostgreSQL schema with Row Level Security policies
@@ -18,8 +20,8 @@ Bangladesh custom tailoring and garments marketplace — first responsive Bengal
 Apply `supabase/schema.sql` first, then `supabase/migrations/002_security_hardening.sql` (see `SETUP.md`). These SQL files have not yet been executed against a live Supabase project or independently audited.
 
 ## Not connected yet
-- Backend and database
-- Secure authentication / OTP
+- Live Supabase project connection and verified production database
+- Phone OTP / SMS authentication
 - Real cart, checkout and order management
 - bKash, Nagad or Rocket payment integration
 - Seller approval workflow and Super Admin dashboard
