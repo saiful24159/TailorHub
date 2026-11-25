@@ -152,6 +152,21 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
 for each row execute procedure public.handle_new_user();
 
+-- Prevent users from changing their own role through the profile update policy.
+create or replace function public.protect_profile_role()
+returns trigger language plpgsql security definer set search_path = public
+as $
+begin
+  if new.role is distinct from old.role and not public.is_admin() then
+    raise exception 'Only an administrator can change account roles';
+  end if;
+  return new;
+end;
+$;
+drop trigger if exists protect_profile_role_trigger on public.profiles;
+create trigger protect_profile_role_trigger before update on public.profiles
+for each row execute procedure public.protect_profile_role();
+
 create or replace function public.is_admin()
 returns boolean language sql stable security definer set search_path = public
 as $$
