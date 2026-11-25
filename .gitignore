@@ -1,0 +1,7 @@
+# Local Supabase browser config (copy from supabase-config.example.js)
+supabase-config.js
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
