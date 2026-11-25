@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171326"><title>আমার অ্যাকাউন্ট — TailorHub</title>
+<style>
+:root{--bg:#100e19;--card:#201b30;--line:#403650;--muted:#c4bbd3;--pink:#f05aa6;--purple:#8c6bff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#392452,transparent 40%),var(--bg);color:#fff;font-family:system-ui,"Noto Sans Bengali",sans-serif}.wrap{max-width:1000px;margin:auto;padding:20px}header{border-bottom:1px solid var(--line);background:#100e19ed}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:65px}.logo{font-size:24px;font-weight:900}.logo span{color:var(--pink)}a,button{color:white}button{border:0;border-radius:11px;padding:11px 15px;background:linear-gradient(110deg,var(--purple),var(--pink));font-weight:700;cursor:pointer}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.muted{color:var(--muted);line-height:1.7}.notice{padding:14px;border:1px solid #59466d;background:#2b2339;border-radius:13px;color:#eadff5}.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}.empty{color:var(--muted);padding:12px 0}a{color:#e4caff}@media(max-width:650px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;padding:12px 0;flex-direction:column}}
+</style></head><body>
+<header><div class="wrap top"><div class="logo">Tailor<span>Hub</span> — আমার অ্যাকাউন্ট</div><div><a href="index.html">← দোকানে ফিরুন</a> <button id="logout">লগআউট</button></div></div></header>
+<main class="wrap"><h1>আমার ড্যাশবোর্ড</h1><p class="muted">আপনার প্রোফাইল, মাপ, বিক্রেতা আবেদন ও অর্ডারের অবস্থা এখানে দেখুন।</p>
+<div id="state" class="notice">অ্যাকাউন্ট লোড হচ্ছে...</div>
+<div class="grid"><section class="card"><h2>আমার প্রোফাইল</h2><div id="profile" class="empty">লোড হচ্ছে...</div></section>
+<section class="card"><h2>বিক্রেতা আবেদন</h2><div id="seller" class="empty">লোড হচ্ছে...</div></section>
+<section class="card"><h2>সংরক্ষিত মাপ</h2><div id="measurements" class="empty">লোড হচ্ছে...</div><p><a href="index.html">নতুন মাপ যোগ করুন</a></p></section>
+<section class="card"><h2>আমার অর্ডার</h2><div id="orders" class="empty">লোড হচ্ছে...</div></section></div></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script>
+(async()=>{
+const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+if(!window.supabase||!window.TAILORHUB_SUPABASE_URL||!window.TAILORHUB_SUPABASE_ANON_KEY||window.TAILORHUB_SUPABASE_URL.includes("YOUR_PROJECT_ID")){$("state").textContent="Supabase সংযোগ হয়নি। supabase-config.js তৈরি করে Project URL ও public key বসান।";return;}
+const db=window.supabase.createClient(window.TAILORHUB_SUPABASE_URL,window.TAILORHUB_SUPABASE_ANON_KEY);
+const {data:{session}}=await db.auth.getSession();
+if(!session){$("state").innerHTML='আপনি লগইন করেননি। <a href="index.html">দোকানের পেজে গিয়ে লগইন করুন</a>।';return;}
+const user=session.user;
+$("logout").onclick=async()=>{await db.auth.signOut();location.href="index.html";};
+const [profile,seller,measurements,orders]=await Promise.all([
+db.from("profiles").select("full_name,phone,district,address,created_at").eq("id",user.id).maybeSingle(),
+db.from("seller_profiles").select("shop_name,district,status,commission_percent,created_at").eq("user_id",user.id).maybeSingle(),
+db.from("measurements").select("id,label,unit,values,source,created_at").eq("customer_id",user.id).order("created_at",{ascending:false}).limit(10),
+db.from("orders").select("id,order_number,status,payment_status,total,currency,created_at").eq("customer_id",user.id).order("created_at",{ascending:false}).limit(10)
+]);
+if(profile.error)$("profile").textContent="প্রোফাইল লোড হয়নি: "+profile.error.message;
+else $("profile").innerHTML='<div class="row"><span>নাম</span><b>'+esc(profile.data?.full_name||"নাম দেওয়া হয়নি")+'</b></div><div class="row"><span>ইমেইল</span><b>'+esc(user.email)+'</b></div><div class="row"><span>মোবাইল</span><b>'+esc(profile.data?.phone||"যোগ করা হয়নি")+'</b></div>';
+if(seller.error)$("seller").textContent="তথ্য লোড হয়নি: "+seller.error.message;
+else if(!seller.data)$("seller").innerHTML='<p class="empty">এখনো বিক্রেতা আবেদন করেননি।</p><a href="index.html">বিক্রেতা হওয়ার আবেদন করুন</a>';
+else {const labels={pending:"অনুমোদনের অপেক্ষায়",approved:"অনুমোদিত",rejected:"বাতিল",suspended:"সাময়িক বন্ধ"};$("seller").innerHTML='<div class="row"><span>দোকান</span><b>'+esc(seller.data.shop_name)+'</b></div><div class="row"><span>জেলা</span><b>'+esc(seller.data.district)+'</b></div><div class="row"><span>অবস্থা</span><b>'+labels[seller.data.status]+'</b></div>';}
+if(measurements.error)$("measurements").textContent="মাপ লোড হয়নি: "+measurements.error.message;
+else if(!measurements.data.length)$("measurements").innerHTML='<p class="empty">এখনো কোনো মাপ সংরক্ষণ করেননি।</p>';
+else $("measurements").innerHTML=measurements.data.map(m=>'<div class="row"><span>'+esc(m.label)+'<br><small>'+new Date(m.created_at).toLocaleDateString("bn-BD")+'</small></span><b>'+Object.keys(m.values||{}).length+'টি মাপ</b></div>').join("");
+const statuses={placed:"অর্ডার করা হয়েছে",measurement_review:"মাপ যাচাই",confirmed:"নিশ্চিত",stitching:"সেলাই চলছে",quality_check:"মান যাচাই",ready:"প্রস্তুত",dispatched:"পাঠানো হয়েছে",delivered:"ডেলিভারি সম্পন্ন",cancelled:"বাতিল"};
+if(orders.error)$("orders").textContent="অর্ডার লোড হয়নি: "+orders.error.message;
+else if(!orders.data.length)$("orders").innerHTML='<p class="empty">এখনো কোনো অর্ডার নেই।</p>';
+else $("orders").innerHTML=orders.data.map(o=>'<div class="row"><span>'+esc(o.order_number)+'<br><small>'+esc(statuses[o.status]||o.status)+'</small></span><b>৳ '+Number(o.total).toLocaleString("bn-BD")+'</b></div>').join("");
+$("state").textContent="লগইন করা হয়েছে: "+user.email;
+})().catch(e=>{document.getElementById("state").textContent="সমস্যা হয়েছে: "+e.message;});
+</script></body></html>
