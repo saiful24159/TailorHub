@@ -19,16 +19,16 @@ The database foundation is defined in `supabase/schema.sql`.
 4. Do not commit real keys to this public repository.
 
 ## Important limitations
-- The current UI forms are demonstrations; they do not yet call Supabase.
+- Login/signup, manual measurement saving, and seller application forms are wired to Supabase Auth/Database in `app.js` once the local config is added. Product customization is only saved in the browser; the real cart and checkout are not implemented.
 - The SQL schema is a starting foundation, not a fully audited production backend.
 - Payment gateway integrations require merchant onboarding, server-side callbacks, and provider approval.
 - AI body measurement needs a separate validated service and customer consent; its output must remain an estimate and be verified by a tailor before production.
 - Do not store customer body photos unless strictly needed, consented to, access-controlled, and protected by a retention policy.
 
 ## Planned implementation order
-1. Connect authentication and customer profiles.
-2. Connect catalog and product customization.
-3. Build measurement save/verify workflow.
-4. Implement cart, order creation, seller assignment and order history.
+1. Test authentication, customer profiles, measurement saving, and seller applications.
+2. Connect the catalog and product customization to database records.
+3. Build measurement review/verification and customer account screens.
+4. Implement cart, checkout, order history, and seller assignment using the secure order function.
 5. Build seller and admin management screens with server-enforced permissions.
 6. Add delivery and payment providers only after merchant credentials and server-side integration are available.
