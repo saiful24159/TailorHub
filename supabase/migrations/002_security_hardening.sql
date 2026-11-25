@@ -144,3 +144,34 @@ grant execute on function public.seller_update_order_status(uuid,public.order_st
 
 comment on function public.create_customer_order(jsonb,uuid,text,text,text,text,text)
 is 'Secure order creation: derives price and seller from active products; never trusts browser totals.';
+
+
+-- Prevent applicants from setting their own approval state or commission.
+create or replace function public.protect_seller_application()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if public.is_admin() then
+    return new;
+  end if;
+  if tg_op = 'INSERT' then
+    new.status := 'pending';
+    new.commission_percent := 10;
+  else
+    if new.user_id is distinct from old.user_id
+       or new.status is distinct from old.status
+       or new.commission_percent is distinct from old.commission_percent then
+      raise exception 'Only an administrator can change seller status or commission';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_seller_application_trigger on public.seller_profiles;
+create trigger protect_seller_application_trigger
+before insert or update on public.seller_profiles
+for each row execute procedure public.protect_seller_application();
