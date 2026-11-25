@@ -9,6 +9,14 @@ Bangladesh custom tailoring and garments marketplace — first responsive Bengal
 - Customer login form UI
 - Seller application form UI
 
+## Database foundation
+- Supabase PostgreSQL schema with Row Level Security policies
+- Security migration that disables unsafe direct order writes
+- Trusted database order-creation function that reads product prices from the database
+- Seller order-status function with server-side ownership checks
+
+Apply `supabase/schema.sql` first, then `supabase/migrations/002_security_hardening.sql` (see `SETUP.md`). These SQL files have not yet been executed against a live Supabase project or independently audited.
+
 ## Not connected yet
 - Backend and database
 - Secure authentication / OTP
